@@ -15,7 +15,6 @@ jobs:
     strategy:
       matrix:
         node-version: [20.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
     - uses: actions/checkout@v4
@@ -25,7 +24,14 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - name: Install dependencies and create lock file
-      run: npm install
+      run: |
+       npm install
+
+    - name: Created file .env
+      run: |
+       touch .env
+       echo "PORT=${{ secrets.PORT }}" > .env
+
     - name: Restart Class CI/CD service        
       run: |
-          pm2 restart class-cicd
+        pm2 restart class-cicd
