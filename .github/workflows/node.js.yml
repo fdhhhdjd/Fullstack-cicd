@@ -33,14 +33,23 @@ jobs:
     needs: build
     runs-on: [Linux]
     steps:
-    - name: Run file docker-compose and send Telegram notification
-      run: |
-        docker-compose -f docker-compose.yml up -d --build
-        # Gửi thông báo Telegram sau khi deploy thành công
-        curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-          -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-          -d parse_mode="Markdown" \
-          -d text="✅ *Deployment Successful!*%0A• Repository: ${{ github.repository }}%0A• Branch: ${{ github.ref_name }}%0A• Commit: ${{ github.sha }}%0A• Author: ${{ github.actor }}%0A• Message: ${{ github.event.head_commit.message }}"
-      
+    - name: Run file docker-compose
+      run: docker-compose -f docker-compose.yml up -d --build
+
+  notification:
+    needs: deploy
+    runs-on: [X64]
+    steps:
+    - uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_CHAT_ID }}
+        token: ${{ secrets.TELEGRAM_BOT_TOKEN }}    
+        message: |
+          ✅ **Deployment Successful!**
+          • **Repository:** ${{ github.repository }}
+          • **Branch:** ${{ github.ref_name }}
+          • **Commit:** ${{ github.sha }}
+          • **Author:** ${{ github.actor }}
+          • **Message:** ${{ github.event.head_commit.message }}
 
         
